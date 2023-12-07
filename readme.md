@@ -46,9 +46,16 @@ This scenario was built to solve the problem of hosting a web application that n
 
 ### Potential use cases
 
-> What industry is the customer in? Use the following industry keywords, when possible, to get the article into the proper search and filter results: retail, finance, manufacturing, healthcare, government, energy, telecommunications, education, automotive, nonprofit, game, media (media and entertainment), travel (includes hospitality, like restaurants), facilities (includes real estate), aircraft (includes aerospace and satellites), agriculture, and sports. 
->   Are there any other use cases or industries where this would be a fit?
->   How similar or different are they to what's in this article?
+This architecture can be useful for scenarios that require:
+ - **Multi-site hosting**: The solution enables hosting multiple applications on separate virtual machines, each with a unique subdomain off a primary apex domain. This can help to isolate and manage different workloads, such as development, testing, and production environments.
+ - **Split brain DNS**: The solution uses Azure Front Door for external users and Application Gateway for internal users, with different DNS records for each. This can help to optimize network performance, security, and availability for different types of users. 
+ - **Network security**: The solution ensures that network traffic between the Application Gateway and the backend application servers (VMs) flows through an Azure Firewall. This can help to protect the applications from malicious attacks and enforce network policies. 
+  - **Application scalability**: The solution uses Application Gateway to distribute traffic among the backend VMs. This can help to improve application performance and availability, as well as support horizontal scaling.
+
+Some industries that might benefit from this architecture are:
+  - **Retail**: Retailers can use this architecture to host multiple e-commerce sites for different regions, brands, or products, while ensuring network security and performance for their customers and employees.
+  - **Finance**: Financial institutions can use this architecture to host multiple applications for different services, such as banking, trading, or insurance, while ensuring network security and compliance for their customers and regulators.
+  - **Media**: Media companies can use this architecture to host multiple applications for different content types, such as news, video, or music, while ensuring network performance and availability for their users and partners.  
 
 ## Considerations
 
