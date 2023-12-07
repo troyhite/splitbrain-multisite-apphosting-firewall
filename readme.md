@@ -125,7 +125,7 @@ Performance efficiency is the ability of your workload to scale to meet the dema
 
 *This article is maintained by Microsoft. It was originally written by the following contributors.* 
 
-Principal authors: > Only the primary authors. Listed alphabetically by last name. Use this format: Fname Lname. If the article gets rewritten, keep the original authors and add in the new one(s).
+Principal authors:
 
  - [Troy Hite](http://linkedin.com/in/digitalbydesign) | Senior Cloud Solution Architect
 
