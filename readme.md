@@ -13,7 +13,7 @@ This article describes an architecture that enables multi-site, split brain DNS 
 The following workflow (or dataflow) corresponds to the above diagram:
 1. External users access the web application through Azure Front Door, which acts as a global load balancer and web application firewall. Azure Front Door routes the requests based on the client HOST HEADER to the Origin Group.
 2. The Origin Group is configured to point to the Application Gateway while leaving the HOST HEADER unaltered. This is required so the Application Gateway can properly route the incoming requests to the various backend pools.
-3. A Network Security Group (NSG) is configured on the Application Gateway subnet to only allow incoming requests from the AzureFrontDoor.Backend service tag. This ensures that public traffic cannot hit the Public IP (pip) directly.
+3. A [Network Security Group (NSG)](https://learn.microsoft.com/en-us/azure/application-gateway/configuration-infrastructure#network-security-groups) is configured on the Application Gateway subnet to only allow incoming requests from the AzureFrontDoor.Backend service tag. This ensures that public traffic cannot hit the Public IP (pip) of the Application Gateway directly.
 4. The Application Gateway is configured with multiple [multisite listeners](https://learn.microsoft.com/en-us/azure/application-gateway/multiple-site-overview) all configured on the same port. Traffic is routed to the appropriate backend by the hostname specified within the multisite listener. Each listener represents a unique subdomain off the apex domain that is configured to point to the appropriate backend pool.
 5. Route tables are implemented on the 'AppGwSubnet' and 'Apps' subnet to facilitate the requirement of having all traffic flow through the Azure Firewall.
 6. Azure Firewall is configured to allow traffic between the Application Gateway and the backend pools. Optionally additional features can be enabled to analyze and inspect the traffic.
@@ -101,7 +101,7 @@ Other contributors:
 
 * [Tutorial: Create and configure an application gateway to host multiple web sites using the Azure Portal](https://learn.microsoft.com/en-us/azure/application-gateway/create-multiple-sites-portal)
 * [Use Azure Front Door in a multitenant solution](https://learn.microsoft.com/en-us/azure/architecture/guide/multitenant/service/front-door)
-* [Application Gateway infrastructure configuration](https://learn.microsoft.com/en-us/azure/application-gateway/configuration-infrastructure#network-security-groups)
+* [Application Gateway infrastructure configuration](https://learn.microsoft.com/en-us/azure/application-gateway/configuration-infrastructure)
 * [End-to-end TLS with Azure Front Door](https://learn.microsoft.com/en-us/azure/frontdoor/end-to-end-tls)
 * [Add a custom domain to Azure Front Door](https://learn.microsoft.com/en-us/azure/frontdoor/front-door-custom-domain)
 * [What is geo-filtering on a domain for Azure Front Door](https://learn.microsoft.com/en-us/azure/web-application-firewall/afds/waf-front-door-geo-filtering)
