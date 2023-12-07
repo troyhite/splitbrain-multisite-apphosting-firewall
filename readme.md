@@ -14,7 +14,10 @@ The following workflow (or dataflow) corresponds to the above diagram:
 1. External users access the web application through Azure Front Door, which acts as a global load balancer and web application firewall. Azure Front Door routes the requests based on the client HOST HEADER to the Origin Group.
 2. The Origin Group is configured to point to the Application Gateway while leaving the HOST HEADER unaltered. This is required so the Application Gateway can properly route the incoming requests to the various backend pools.
 3. A Network Security Group (NSG) is configured on the Application Gateway subnet to only allow incoming requests from the AzureFrontDoor.Backend service tag. This ensures that public traffic cannot hit the Public IP (pip) directly.
-4. The build pipeline runs on the PR.
+4. The Application Gateway is configured with multiple [multisite listeners](https://learn.microsoft.com/en-us/azure/application-gateway/multiple-site-overview) all configured on the same port. Traffic is routed to the appropriate backend by the hostname specified within the multisite listener. Each listener represents a unique subdomain off the apex domain that is configured to point to the appropriate backend pool.
+5. Route tables are implemented on the 'AppGwSubnet' and 'Apps' subnet to facilitate the requirement of having all traffic flow through the Azure Firewall.
+6. Azure Firewall is configured to allow traffic between the Application Gateway and the backend pools. Optionally additional features can be enabled to analyze and inspect the traffic.
+7. On premise users are pointed to a DNS server that contains the same subdomains as the Front Door but are configured to the private IP address of the Application Gateway.
 
 ### Components
 
