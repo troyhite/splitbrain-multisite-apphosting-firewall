@@ -33,11 +33,13 @@ Some possible alternatives for this architecture are:
 
 ## Scenario details
 
-> This should be an explanation of the business problem and why this scenario was built to solve it.
->   What prompted them to solve the problem?
->   What services were used in building out this solution?
->   What does this example scenario show? What are the customer's goals?
-> What were the benefits of implementing the solution?
+This scenario was built to solve the problem of hosting a web application that needs to serve both external and internal users with high availability, scalability, and security. The customer’s goals are to:
+
+ - Provide fast and reliable access to the web application for users around the world.
+ - Use the same apex domain name and URL for both external and internal users, without exposing the internal IP addresses to the internet while routing subdomains to different applications hosted on separate virtual machines.
+ - Protect the web application from common web attacks and malicious traffic.
+ - Control and monitor all network traffic between the Application Gateway and the backend virtual machines.
+ - Ensure the availability and fault tolerance of the web application.
 
 ### Potential use cases
 
@@ -121,23 +123,16 @@ Performance efficiency is the ability of your workload to scale to meet the dema
 
 ## Contributors
 
-> (Expected, but this section is optional if all the contributors would prefer to not be mentioned.)
-
-> Start with the explanation text (same for every section), in italics. This makes it clear that Microsoft takes responsibility for the article (not the one contributor). Then include the "Principal authors" list and the "Other contributors" list, if there are additional contributors (all in plain text, not italics or bold). Link each contributor's name to the person's LinkedIn profile. After the name, place a pipe symbol ("|") with spaces, and then enter the person's title. We don't include the person's company, MVP status, or links to additional profiles (to minimize edits/updates). Implement this format:
-
 *This article is maintained by Microsoft. It was originally written by the following contributors.* 
 
 Principal authors: > Only the primary authors. Listed alphabetically by last name. Use this format: Fname Lname. If the article gets rewritten, keep the original authors and add in the new one(s).
 
- - [Author 1 Name](http://linkedin.com/ProfileURL) | Title, such as "Cloud Solution Architect"
- - [Author 2 Name](http://linkedin.com/ProfileURL) | Title, such as "Cloud Solution Architect"
- - > Continue for each primary author (even if there are 10 of them).
+ - [Troy Hite](http://linkedin.com/in/digitalbydesign) | Senior Cloud Solution Architect
 
-Other contributors: > Include contributing (but not primary) authors, major editors (not minor edits), and technical reviewers. Listed alphabetically by last name. Use this format: Fname Lname. It's okay to add in newer contributors.
+Other contributors:
 
- - [Contributor 1 Name](http://linkedin.com/ProfileURL) | Title, such as "Cloud Solution Architect"
- - [Contributor 2 Name](http://linkedin.com/ProfileURL) | Title, such as "Cloud Solution Architect"
- - > Continue for each additional contributor (even if there are 10 of them).
+ - [Mays Algebary](https://www.linkedin.com/in/maysalgebary) | Senior Azure Networking Global Blackbelt
+ - [Adam Torkor](https://www.linkedin.com/in/at-10993764) | Senior Azure Networking Global Blackbelt
  
 *To see non-public LinkedIn profiles, sign in to LinkedIn.*
 
