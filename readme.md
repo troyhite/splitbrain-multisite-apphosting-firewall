@@ -1,6 +1,6 @@
 <!-- Use the aac-browse-header.yml   -->
 
-This article describes an architecture that enables multi-site, split brain DNS application hosting with applications being hosted on separate virtual machines all configured with a unique subdomain off a primary apex domain. All while ensuring network traffic between the Application Gateway and the backend application servers (VMs) flows through an Azure Firewall. Azure Front Door is used for external users and Application Gateway for internal users. This architecture provides high availability, scalability, and security for web applications hosted on Azure.
+This article describes an architecture that enables multi-site, split-brain DNS application hosting with applications being hosted on separate virtual machines all configured with a unique subdomain off a primary apex domain. All while ensuring network traffic between the Application Gateway and the backend application servers (VMs) flows through an Azure Firewall. Azure Front Door is used for external users and Application Gateway for internal users. This architecture provides high availability, scalability, and security for web applications hosted on Azure.
 
 ## Architecture
 
@@ -48,7 +48,7 @@ This scenario was built to solve the problem of hosting a web application that n
 
 This architecture can be useful for scenarios that require:
  - **Multi-site hosting**: The solution enables hosting multiple applications on separate virtual machines, each with a unique subdomain off a primary apex domain. This can help to isolate and manage different workloads, such as development, testing, and production environments.
- - **Split brain DNS**: The solution uses Azure Front Door for external users and Application Gateway for internal users, with different DNS records for each. This can help to optimize network performance, security, and availability for different types of users. 
+ - **Split-brain DNS**: The solution uses Azure Front Door for external users and Application Gateway for internal users, with different DNS records for each. This can help to optimize network performance, security, and availability for different types of users. 
  - **Network security**: The solution ensures that network traffic between the Application Gateway and the backend application servers (VMs) flows through an Azure Firewall. This can help to protect the applications from malicious attacks and enforce network policies. 
   - **Application scalability**: The solution uses Application Gateway to distribute traffic among the backend VMs. This can help to improve application performance and availability, as well as support horizontal scaling.
 
