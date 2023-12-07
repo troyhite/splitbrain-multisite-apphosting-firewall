@@ -60,36 +60,29 @@ These considerations implement the pillars of the Azure Well-Architected Framewo
 
 ### Reliability
 
-> REQUIRED STATEMENT: If using this section, include the following statement to introduce the section:
-
 Reliability ensures your application can meet the commitments you make to your customers. For more information, see [Overview of the reliability pillar](/azure/architecture/framework/resiliency/overview).
 
-> This section includes resiliency and availability considerations. They can also be H4 headers in this section, if you think they should be separated.
-> Are there any key resiliency and reliability considerations (past the typical)?
+ - **Virtual machines**: You can use [Availability Sets](https://learn.microsoft.com/en-us/azure/virtual-machines/availability-set-overview) to distribute your virtual machines across multiple fault domains and update domains within a single datacenter. You can also use [Availability Zones](https://learn.microsoft.com/en-us/azure/reliability/availability-zones-overview) to distribute your virtual machines across multiple physically isolated datacenters within a region.
+  - **Application Gateway**: Azure Application Gateways are always deployed in a highly available fashion. The service is made up of multiple instances that are created as configured if autoscaling is disabled, or required by the application load if autoscaling is enabled. You can also use [Zone-redundant SKUs](https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-autoscaling-zone-redundant#autoscaling-and-high-availability) to deploy your Application Gateway instances across Availability Zones and achieve higher availability and resiliency.
+  - **Azure Front Door**: You can use [Azure Front Door Health Probes](https://learn.microsoft.com/en-us/azure/frontdoor/health-probes) to monitor the health and availability of your backend application servers and automatically fail over to healthy endpoints. You can also use [Azure Front Door Priority-based traffic-routing](https://learn.microsoft.com/en-us/azure/frontdoor/routing-methods#priority-based-traffic-routing) to distribute your traffic across multiple backend pools and optimize the performance and reliability of your web applications.  
 
 ### Security
 
-> REQUIRED STATEMENT: If using this section, include the following statement to introduce the section:
-
 Security provides assurances against deliberate attacks and the abuse of your valuable data and systems. For more information, see [Overview of the security pillar](/azure/architecture/framework/security/overview).
 
-> This section includes identity and data sovereignty considerations.
-> Are there any security considerations (past the typical) that I should know about this?
-> Because security is important to our business, be sure to include your Azure security baseline assessment recommendations in this section. See https://aka.ms/AzureSecurityBaselines
+ - **Virtual machines**: You can use [Microsoft Defender for Cloud](https://learn.microsoft.com/en-us/azure/defender-for-cloud/defender-for-cloud-introduction) to monitor the security posture of your virtual machines and apply security recommendations. You can also use [Microsoft Defender for Servers](https://learn.microsoft.com/en-us/azure/defender-for-cloud/plan-defender-for-servers-select-plan) to enable advanced threat protection and vulnerability assessment for your virtual machines.
+  - **Application Gateway**: You can use [Web Application Firewall (WAF)](https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/ag-overview) to protect your web applications from common web vulnerabilities and exploits. You can also use [Application Gateway Private Link](https://learn.microsoft.com/en-us/azure/application-gateway/private-link) to securely access your backend application servers from Application Gateway without exposing them to the public internet.
+   - **Azure Firewall**: You can use [Azure Firewall Threat Intelligence](https://learn.microsoft.com/en-us/azure/firewall/threat-intel) to block malicious traffic from known malicious IP addresses and domains. You can also use [Azure Firewall DNS Proxy](https://learn.microsoft.com/en-us/azure/firewall/dns-details) to intercept and inspect DNS traffic and apply DNS filtering rules. 
+   - **Azure Front Door**: You can use [Azure Web Application Firewall](https://learn.microsoft.com/en-us/azure/web-application-firewall/afds/afds-overview) to protect your web applications from common web vulnerabilities and exploits at the edge. You can also use [Azure Private Link](https://learn.microsoft.com/en-us/azure/frontdoor/private-link) in Front Door Premium to securely access your backend application servers from Azure Front Door without exposing them to the public internet.    
 
 ### Cost optimization
 
-> REQUIRED: This section is required. Cost is of the utmost importance to our customers.
-
-> REQUIRED STATEMENT: Include the following statement to introduce the section:
-
 Cost optimization is about looking at ways to reduce unnecessary expenses and improve operational efficiencies. For more information, see [Overview of the cost optimization pillar](/azure/architecture/framework/cost/overview).
 
-> How much will this cost to run? See if you can answer this without dollar amounts.
-> Are there ways I could save cost?
-> If it scales linearly, than we should break it down by cost/unit. If it does not, why?
-> What are the components that make up the cost?
-> How does scale affect the cost?
+  - **Virtual Machines**: The cost of running virtual machines depends on the size, region, and operating system of the instances. You can use [Azure Reserved Virtual Machine Instances](https://learn.microsoft.com/en-us/azure/cost-management-billing/reservations/save-compute-costs-reservations) to save up to 72% compared to pay-as-you-go prices. You can also use [Azure Hybrid Benefit](https://learn.microsoft.com/en-us/windows-server/get-started/azure-hybrid-benefit) to reuse your existing Windows Server licenses and save up to 40%. 
+  - **Application Gateway**: The cost of Application Gateway is based on the number of instances, the size of the instances, and the amount of data processed. You can use [autoscaling](https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-autoscaling-zone-redundant) to adjust the number of instances based on the traffic demand and optimize the cost. You can also use [zone-redundant SKUs](https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-autoscaling-zone-redundant#autoscaling-and-high-availability) to deploy across Availability Zones and reduce the need for additional instances for high availability. 
+  - **Azure Firewall**: The cost of Azure Firewall is based on a fixed hourly rate and the amount of data processed. You can use [Azure Firewall Manager](https://learn.microsoft.com/en-us/azure/firewall-manager/overview) to centrally manage multiple firewalls and apply consistent policies across different subscriptions and virtual networks. You can also use [Azure Firewall Premium](https://learn.microsoft.com/en-us/azure/firewall/premium-features) to get additional features such as TLS inspection, IDPS, and URL filtering.
+  - **Azure Front Door**: The cost of Azure Front Door is based on the number of routing rules, the number of HTTP(S) requests, and the amount of data transferred. You can use [Azure Front Door Standard/Premium](https://learn.microsoft.com/en-us/azure/frontdoor/understanding-pricing) to get a unified experience with Azure CDN, Azure Web Application Firewall, and Azure Private Link. You can also use [Azure Front Door Rules Engine](https://learn.microsoft.com/en-us/azure/frontdoor/front-door-rules-engine?pivots=front-door-standard-premium) to customize how your traffic is handled and optimize the performance and cost.
 
 > Link to the pricing calculator (https://azure.microsoft.com/en-us/pricing/calculator) with all of the components in the architecture included, even if they're a $0 or $1 usage.
 > If it makes sense, include small/medium/large configurations. Describe what needs to be changed as you move to larger sizes.
