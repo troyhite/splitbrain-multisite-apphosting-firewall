@@ -8,7 +8,7 @@
 
 > Architecture diagram goes here. Use the following format:
 
-![Diagram of the <solution name> architecture.](./images/<file-name>.png)
+![Diagram of the <solution name> architecture.](./images/SplitBrain-MultisiteHosting-FrontDoor-AppGW.png)
 
 > Under the architecture diagram, include this sentence and a link to the Visio file or the PowerPoint file: 
 
