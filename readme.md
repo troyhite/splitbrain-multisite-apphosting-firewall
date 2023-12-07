@@ -87,25 +87,6 @@ Cost optimization is about looking at ways to reduce unnecessary expenses and im
 > Link to the pricing calculator (https://azure.microsoft.com/en-us/pricing/calculator) with all of the components in the architecture included, even if they're a $0 or $1 usage.
 > If it makes sense, include small/medium/large configurations. Describe what needs to be changed as you move to larger sizes.
 
-### Operational excellence
-
-> REQUIRED STATEMENT: If using this section, include the following statement to introduce the section:
-
-Operational excellence covers the operations processes that deploy an application and keep it running in production. For more information, see [Overview of the operational excellence pillar](/azure/architecture/framework/devops/overview).
-
-> This includes DevOps, monitoring, and diagnostics considerations.
-> How do I need to think about operating this solution?
-
-### Performance efficiency
-
-> REQUIRED STATEMENT: If using this section, include the following statement to introduce the section:
-
-Performance efficiency is the ability of your workload to scale to meet the demands placed on it by users in an efficient manner. For more information, see [Performance efficiency pillar overview](/azure/architecture/framework/scalability/overview).
-
-> This includes scalability considerations.
-> Are there any key performance considerations (past the typical)?
-> Are there any size considerations around this specific solution? What scale does this work at? At what point do things break or not make sense for this architecture?
-
 ## Contributors
 
 *This article is maintained by Microsoft. It was originally written by the following contributors.* 
