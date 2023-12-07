@@ -1,6 +1,6 @@
 <!-- Use the aac-browse-header.yml   -->
 
-This article describes an architecture that enables multi-site, split brain DNS application hosting with applications being hosted on separate virtual machines all configured with a unique subdomain off a primary apex domain. Azure Front Door is used for external users and Application Gateway for internal users. This architecture provides high availability, scalability, and security for web applications hosted on Azure.
+This article describes an architecture that enables multi-site, split brain DNS application hosting with applications being hosted on separate virtual machines all configured with a unique subdomain off a primary apex domain. All while ensuring network traffic between the Application Gateway and the backend application servers (VMs) flows through an Azure Firewall. Azure Front Door is used for external users and Application Gateway for internal users. This architecture provides high availability, scalability, and security for web applications hosted on Azure.
 
 ## Architecture
 
@@ -48,8 +48,6 @@ This scenario was built to solve the problem of hosting a web application that n
 >   How similar or different are they to what's in this article?
 
 ## Considerations
-
-> REQUIRED STATEMENT: Include the following statement to introduce this section:
 
 These considerations implement the pillars of the Azure Well-Architected Framework, which is a set of guiding tenets that can be used to improve the quality of a workload. For more information, see [Microsoft Azure Well-Architected Framework](/azure/architecture/framework).
 
@@ -114,12 +112,6 @@ Performance efficiency is the ability of your workload to scale to meet the dema
 > This includes scalability considerations.
 > Are there any key performance considerations (past the typical)?
 > Are there any size considerations around this specific solution? What scale does this work at? At what point do things break or not make sense for this architecture?
-
-## Deploy this scenario
-
-> (Optional, but greatly encouraged)
-
-> Is there an example deployment that can show me this in action?  What would I need to change to run this in production?
 
 ## Contributors
 
