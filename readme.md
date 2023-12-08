@@ -1,6 +1,6 @@
 <!-- Use the aac-browse-header.yml   -->
 
-This article describes an architecture that enables multi-site, split-brain DNS application hosting with applications being hosted on separate virtual machines all configured with a unique subdomain off a primary apex domain. All while ensuring network traffic between the Application Gateway and the backend application servers (VMs) flows through an Azure Firewall. Azure Front Door is used for external users and Application Gateway for internal users. This architecture provides high availability, scalability, and security for web applications hosted on Azure.
+This example architecture was designed to support multi-site, split-brain DNS application hosting for a customer. In this setup, applications are hosted on distinct virtual machines, each configured with a unique subdomain derived from a primary apex domain. A key aspect of this architecture is the secure management of network traffic. It ensures that all communication between the Application Gateway and the backend application servers (VMs) is routed through an Azure Firewall. For user access, Azure Front Door is employed for external users, while the Application Gateway is utilized for internal users. This architectural approach offers high availability, scalability, and enhanced security for web applications hosted on Azure.
 
 ## Architecture
 
