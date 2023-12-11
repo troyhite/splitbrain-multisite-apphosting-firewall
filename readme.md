@@ -105,7 +105,7 @@ Principal authors:
 Other contributors:
 
  - [Mays Algebary](https://www.linkedin.com/in/maysalgebary) | Senior Azure Networking Global Blackbelt
- - [Adam Torkor](https://www.linkedin.com/in/at-10993764) | Senior Azure Networking Global Blackbelt
+ - [Adam Torkar](https://www.linkedin.com/in/at-10993764) | Senior Azure Networking Global Blackbelt
  
 *To see non-public LinkedIn profiles, sign in to LinkedIn.*
 
