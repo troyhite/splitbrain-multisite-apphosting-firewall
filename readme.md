@@ -30,7 +30,7 @@ The following workflow (or dataflow) corresponds to the above diagram:
   
 ### Alternatives
 
-The primary alternative to this architecture is to remove Front Door and simply have external users configured to hit the public IP (pip) of the Application Gateway. There are caveats to this approach but it should be mentioned that it is an option. (diagram shown below) This is called out further in the Cost Optimization section later on in this document.
+The primary alternative to this architecture is to remove Front Door and simply have external users configured to hit the public IP (pip) of the Application Gateway. There are caveats to this approach but it should be mentioned that it is an option (diagram shown below). This is called out further in the Cost Optimization section later on in this document.
 
 ![Diagram of the alternate Split-brain App Hosting architecture.](./images/SplitBrain-MultisiteHosting-FrontDoor-AppGW-alt.png)
 
