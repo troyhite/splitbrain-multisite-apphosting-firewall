@@ -4,7 +4,7 @@ This example architecture was designed to support multi-site, split-brain DNS ap
 
 ## Architecture
 
-![Diagram of the <solution name> architecture.](./images/SplitBrain-MultisiteHosting-FrontDoor-AppGW.png)
+![Diagram of the Split-brain App Hosting architecture.](./images/SplitBrain-MultisiteHosting-FrontDoor-AppGW.png)
 
 *Download a [Visio file](https://arch-center.azureedge.net/[file-name].vsdx) of this architecture.*
 
@@ -30,7 +30,11 @@ The following workflow (or dataflow) corresponds to the above diagram:
   
 ### Alternatives
 
-Some possible alternatives for this architecture are:
+The primary alternative to this architecture is to remove Front Door and simply have external users configured to hit the public IP (pip) of the Application Gateway. There are caveats to this approach but it should be mentioned that it is an option. (diagram shown below) This is called out further in the Cost Optimization section later on in this document.
+
+![Diagram of the alternate Split-brain App Hosting architecture.](./images/SplitBrain-MultisiteHosting-FrontDoor-AppGW-alt.png)
+
+Other possible alternatives for this architecture are:
   - [Azure Traffic Manager](https://azure.microsoft.com/services/traffic-manager): Azure Traffic Manager is a DNS-based traffic routing service that distributes the traffic across different regions and endpoints. It could be used instead of Azure Front Door to route the external users to the closest Application Gateway instance. However, Azure Front Door provides additional features such as web application firewall, URL rewriting, and session affinity, which are not available in Azure Traffic Manager.
   - [Azure Load Balancer](https://azure.microsoft.com/services/load-balancer): Azure Load Balancer is a network load balancer that provides high availability and scalability for TCP and UDP traffic. It could be used instead of Application Gateway to distribute the requests from both external and internal users to the back-end web servers. However, Application Gateway provides additional features such as web application firewall, SSL termination, and cookie-based session affinity, which are not available in Azure Load Balancer.
   - [Azure App Service](https://azure.microsoft.com/services/app-service): Azure App Service is a fully managed platform for hosting web applications without managing the underlying infrastructure. It could be used instead of Azure Virtual Machines to host the back-end web servers. However, Azure Virtual Machines provide more flexibility and control over the web server configuration and deployment, which might be required for some web applications.
