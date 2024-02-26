@@ -80,7 +80,7 @@ Security provides assurances against deliberate attacks and the abuse of your va
 
 In this example workload, network segmentation is the most crucial aspect of security. It enhances the architecture's security posture by isolating systems and applications, thereby containing potential threats and preventing them from spreading. This approach also reduces the attack surface by limiting lateral movement across the network.
 
-Many regulatory standards require network segmentation, making it essential for compliance. Moreover, it simplifies monitoring and troubleshooting due to more predictable traffic patterns within a segment. Lastly, it allows for granular control over network traffic, enabling organizations to enforce policies on a per-segment basis. By placing our Application Gateway and Azure Firewall in the Hub vNET and our backend web servers in the spoke vNET, we can apply Network Security Groups (NSG) on each subnet explicitly allowing/denying traffic as per our application requirements.
+Many regulatory standards require network segmentation, making it essential for compliance. Moreover, it simplifies monitoring and troubleshooting due to more predictable traffic patterns within a segment. Lastly, it allows for granular control over network traffic, enabling organizations to enforce policies on a per-segment basis. In this example workload we achieve this by placing our Application Gateway and Azure Firewall in the Hub vNET and our backend web servers in the spoke vNET, we can apply Network Security Groups (NSG) on each subnet explicitly allowing/denying traffic as per our application requirements.
 
 ### Other Potential Security Enhacements
 
