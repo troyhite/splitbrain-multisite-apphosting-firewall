@@ -76,14 +76,18 @@ Reliability ensures your application can meet the commitments you make to your c
 
 ### Security
 
-Security provides assurances against deliberate attacks and the abuse of your valuable data and systems. For more information, see [Overview of the security pillar](/azure/architecture/framework/security/overview).
+Security provides assurances against deliberate attacks and the abuse of your valuable data and systems. For more information, see [Overview of the security pillar](/azure/architecture/framework/security/overview). 
+
+In this example workload, network segmentation is the most crucial aspect of security. It enhances the architecture's security posture by isolating systems and applications, thereby containing potential threats and preventing them from spreading. This approach also reduces the attack surface by limiting lateral movement across the network.
+
+Many regulatory standards require network segmentation, making it essential for compliance. Moreover, it simplifies monitoring and troubleshooting due to more predictable traffic patterns within a segment. Lastly, it allows for granular control over network traffic, enabling organizations to enforce policies on a per-segment basis. By placing our Application Gateway and Azure Firewall in the Hub vNET and our backend web servers in the spoke vNET, we can apply Network Security Groups (NSG) on each subnet explicitly allowing/denying traffic as per our application requirements.
+
+### Other Potential Security Enhacements
 
  - **Virtual machines**: You can use [Microsoft Defender for Cloud](https://learn.microsoft.com/en-us/azure/defender-for-cloud/defender-for-cloud-introduction) to monitor the security posture of your virtual machines and apply security recommendations. You can also use [Microsoft Defender for Servers](https://learn.microsoft.com/en-us/azure/defender-for-cloud/plan-defender-for-servers-select-plan) to enable advanced threat protection and vulnerability assessment for your virtual machines.
   - **Application Gateway**: You can use [Web Application Firewall (WAF)](https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/ag-overview) to protect your web applications from common web vulnerabilities and exploits. You can also use [Application Gateway Private Link](https://learn.microsoft.com/en-us/azure/application-gateway/private-link) to securely access your backend application servers from Application Gateway without exposing them to the public internet.
    - **Azure Firewall**: You can use [Azure Firewall Threat Intelligence](https://learn.microsoft.com/en-us/azure/firewall/threat-intel) to block malicious traffic from known malicious IP addresses and domains. You can also use [Azure Firewall DNS Proxy](https://learn.microsoft.com/en-us/azure/firewall/dns-details) to intercept and inspect DNS traffic and apply DNS filtering rules. 
    - **Azure Front Door**: You can use [Azure Web Application Firewall](https://learn.microsoft.com/en-us/azure/web-application-firewall/afds/afds-overview) to protect your web applications from common web vulnerabilities and exploits at the edge. You can also use [Azure Private Link](https://learn.microsoft.com/en-us/azure/frontdoor/private-link) in Front Door Premium to securely access your backend application servers from Azure Front Door without exposing them to the public internet.    
-
-Network segmentation is also a crucial aspect of security. It enhances an organization’s security posture by isolating systems and applications, thereby containing potential threats and preventing them from spreading. This approach also reduces the attack surface by limiting lateral movement across the network. Many regulatory standards require network segmentation, making it essential for compliance. Moreover, it simplifies monitoring and troubleshooting due to more predictable traffic patterns within a segment. Lastly, it allows for granular control over network traffic, enabling organizations to enforce policies on a per-segment basis. However, it should be part of a layered defense strategy, complemented by other measures like firewalls and intrusion detection systems.
 
 ### Cost optimization
 
