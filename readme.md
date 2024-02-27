@@ -112,7 +112,7 @@ Other contributors:
 
  - [Mays Algebary](https://www.linkedin.com/in/maysalgebary) | Senior Azure Networking Global Blackbelt
  - [Adam Torkar](https://www.linkedin.com/in/at-10993764) | Senior Azure Networking Global Blackbelt
- - [Michael McKKechney](https://www.linkedin.com/in/michaelmckechney/) | Principal Azure Technology Specialist
+ - [Michael McKechney](https://www.linkedin.com/in/michaelmckechney/) | Principal Azure Technology Specialist
  
 *To see non-public LinkedIn profiles, sign in to LinkedIn.*
 
