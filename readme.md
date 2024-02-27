@@ -38,6 +38,8 @@ Other possible alternatives for this architecture are:
   - [Azure Traffic Manager](https://azure.microsoft.com/services/traffic-manager): Azure Traffic Manager is a DNS-based traffic routing service that distributes the traffic across different regions and endpoints. It could be used instead of Azure Front Door to route the external users to the closest Application Gateway instance. However, Azure Front Door provides additional features such as web application firewall, caching, and session affinity, which are not available in Azure Traffic Manager.
   - [Azure Load Balancer](https://azure.microsoft.com/services/load-balancer): Azure Load Balancer is a network load balancer that provides high availability and scalability for TCP and UDP traffic. It could be used instead of Application Gateway to distribute the requests from both external and internal users to the back-end web servers. However, Application Gateway provides additional features such as web application firewall, SSL termination, and cookie-based session affinity, which are not available in Azure Load Balancer.
   - [Azure App Service](https://azure.microsoft.com/services/app-service): Azure App Service is a fully managed platform for hosting web applications without managing the underlying infrastructure. It could be used instead of Azure Virtual Machines to host the back-end web servers. However, Azure Virtual Machines provide more flexibility and control over the web server configuration and deployment, which might be required for some web applications.
+  - [Container Apps](https://learn.microsoft.com/en-us/azure/container-apps/overview): Azure Container Apps is a fully managed platform for hosting containerized applications without managing the underlying infrastructure. It could be used instead of Azure Virtual Machines to host the back-end web servers.
+  - [Azure Kubernetes Service (AKS)](https://learn.microsoft.com/en-us/azure/aks/intro-kubernetes): Azure Kubernetes Service (AKS) is a managed Kubernetes service that allows you to run and orchestrate containerized applications at scale. It could be used instead of Azure Virtual Machines to host the back-end web servers. However, Azure Kubernetes Service (AKS) requires more management and operational overhead than Azure Virtual Machines, and might not be suitable for simple web applications.
 
 ## Scenario details
 
@@ -70,14 +72,14 @@ These considerations implement the pillars of the Azure Well-Architected Framewo
 
 Operational excellence is about delivering and supporting reliable and efficient solutions that align with business objectives. For more information, see [Overview of the operational excellence pillar](/azure/architecture/framework/operational-excellence/overview).
 
-In this example workload, Infrastructure as Code (IaC) is a key practice that enables operational excellence. IaC is the process of managing and provisioning cloud resources through code, rather than manual processes. IaC can help to:
+In this example workload, deploying the resources via Infrastructure as Code (IaC) is a key practice that enables operational excellence. IaC is the process of managing and provisioning cloud resources through code, rather than manual processes. IaC can help to:
 
 - Improve consistency and repeatability of deployments, reducing errors and failures.
 - Increase agility and speed of delivery, enabling faster feedback and iteration.
 - Enhance security and compliance, enforcing policies and standards across the environment.
 - Reduce costs and waste, optimizing the utilization and allocation of resources.
 
-To implement IaC for this architecture, you can use [Azure Bicep templates](https://learn.microsoft.com/en-us/azure/templates/microsoft.network/applicationgateways?pivots=deployment-language-bicep) to define the desired state of your cloud resources. Bicep is a domain-specific language (DSL) for deploying Azure resources. It simplifies the creation of ARM templates by providing a more concise and readable syntax.
+To implement IaC for this architecture, you can use [Azure Bicep templates](https://learn.microsoft.com/en-us/azure/templates/microsoft.network/applicationgateways?pivots=deployment-language-bicep) (Application Gateway template linked) to define the desired state of your cloud resources. Bicep is a domain-specific language (DSL) for deploying Azure resources. It simplifies the creation of ARM templates by providing a more concise and readable syntax.
 
 You can also use Azure DevOps to manage the source control, testing, and deployment of your Bicep templates. Azure DevOps is a cloud-based platform that provides a set of tools and services for collaborative software development. You can use Azure DevOps to:
 
