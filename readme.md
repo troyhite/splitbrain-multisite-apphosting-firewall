@@ -86,6 +86,8 @@ You can also use Azure DevOps to manage the source control, testing, and deploym
 - Define and execute continuous integration and continuous delivery (CI/CD) pipelines for your Bicep templates, automating the build and release process.
 - Monitor and troubleshoot the performance and health of your deployments, identifying and resolving issues quickly.
 
+When managing Infrastructure as Code (IaC) alongside the application life cycle, it’s crucial to recognize their differences. IaC resources require specific life cycle management, addressing versioning, testing, deployment, and updates. Additionally, IaC security and compliance must be considered separately from application code. To achieve operational excellence, organizations should use a common source control system, a unified CI/CD pipeline, and a shared monitoring and auditing system for both code and IaC resources. 
+
 By using IaC and Azure DevOps, you can achieve operational excellence for your web application hosting solution, ensuring reliability, efficiency, and alignment with your business goals.
 
 ### Reliability
