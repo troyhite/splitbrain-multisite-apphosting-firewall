@@ -66,6 +66,28 @@ Some industries that might benefit from this architecture are:
 
 These considerations implement the pillars of the Azure Well-Architected Framework, which is a set of guiding tenets that can be used to improve the quality of a workload. For more information, see [Microsoft Azure Well-Architected Framework](/azure/architecture/framework).
 
+### Operational Excellence
+
+Operational excellence is about delivering and supporting reliable and efficient solutions that align with business objectives. For more information, see [Overview of the operational excellence pillar](/azure/architecture/framework/operational-excellence/overview).
+
+In this example workload, Infrastructure as Code (IaC) is a key practice that enables operational excellence. IaC is the process of managing and provisioning cloud resources through code, rather than manual processes. IaC can help to:
+
+- Improve consistency and repeatability of deployments, reducing errors and failures.
+- Increase agility and speed of delivery, enabling faster feedback and iteration.
+- Enhance security and compliance, enforcing policies and standards across the environment.
+- Reduce costs and waste, optimizing the utilization and allocation of resources.
+
+To implement IaC for this architecture, you can use [Azure Bicep templates](https://learn.microsoft.com/en-us/azure/templates/microsoft.network/applicationgateways?pivots=deployment-language-bicep) to define the desired state of your cloud resources. Bicep is a domain-specific language (DSL) for deploying Azure resources. It simplifies the creation of ARM templates by providing a more concise and readable syntax.
+
+You can also use Azure DevOps to manage the source control, testing, and deployment of your Bicep templates. Azure DevOps is a cloud-based platform that provides a set of tools and services for collaborative software development. You can use Azure DevOps to:
+
+- Store and version your Bicep templates in a Git repository, enabling collaboration and tracking of changes.
+- Create and run unit tests and validation tests for your Bicep templates, ensuring the quality and correctness of your code.
+- Define and execute continuous integration and continuous delivery (CI/CD) pipelines for your Bicep templates, automating the build and release process.
+- Monitor and troubleshoot the performance and health of your deployments, identifying and resolving issues quickly.
+
+By using IaC and Azure DevOps, you can achieve operational excellence for your web application hosting solution, ensuring reliability, efficiency, and alignment with your business goals.
+
 ### Reliability
 
 Reliability ensures your application can meet the commitments you make to your customers. For more information, see [Overview of the reliability pillar](/azure/architecture/framework/resiliency/overview).
