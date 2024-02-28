@@ -4,7 +4,7 @@ This example architecture was designed to support multi-site, split-brain DNS ap
 
 ## Architecture
 
-![Diagram of the Split-brain App Hosting architecture.](./images/SplitBrain-MultisiteHosting-FrontDoor-AppGW.png)
+![Diagram of the Split-brain App Hosting architecture.](./media/SplitBrain-MultisiteHosting-FrontDoor-AppGW.png)
 
 *Download a [Visio file](https://arch-center.azureedge.net/[file-name].vsdx) of this architecture.*
 
@@ -32,7 +32,7 @@ The following workflow (or dataflow) corresponds to the above diagram:
 
 The primary alternative to this architecture is to remove Front Door and simply have external users configured to hit the public IP (pip) of the Application Gateway. Based on the requirements, this architecture was not viable due to needing [caching/optimization](https://learn.microsoft.com/en-us/azure/frontdoor/front-door-caching?pivots=front-door-standard-premium) done at the entry point into Azure. This is called out further in the Cost Optimization section later on in this document.
 
-![Diagram of the alternate Split-brain App Hosting architecture.](./images/SplitBrain-MultisiteHosting-FrontDoor-AppGW-alt.png)
+![Diagram of the alternate Split-brain App Hosting architecture.](./media/SplitBrain-MultisiteHosting-FrontDoor-AppGW-alt.png)
 
 Other possible alternatives for this architecture are:
   - [Azure Traffic Manager](https://azure.microsoft.com/services/traffic-manager): Azure Traffic Manager is a DNS-based traffic routing service that distributes the traffic across different regions and endpoints. It could be used instead of Azure Front Door to route the external users to the closest Application Gateway instance. However, Azure Front Door provides additional features such as web application firewall, caching, and session affinity, which are not available in Azure Traffic Manager.
