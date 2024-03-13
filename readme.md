@@ -22,13 +22,13 @@ The following workflow corresponds to the above diagram:
    - Azure Front Door routes the requests based on the client `Host` HTTP header to the configured Origin Group.
 2. The Origin Group is configured to point to the Application Gateway by the Application Gateway's public IP address.
 
-   > [!IMPORTANT]
-   > You must ensure that the Origin Group is configured to leave the `Host` HTTP header unaltered. This is required so the Application Gateway can properly route the incoming requests to the various backend pools.
+> [!IMPORTANT]
+> You must ensure that the Origin Group is configured to leave the `Host` HTTP header unaltered. This is required so the Application Gateway can properly route the incoming requests to the various backend pools.
 
 3. A [Network Security Group (NSG)](/azure/application-gateway/configuration-infrastructure#network-security-groups) is configured to allow inbound access on ports 80 and 443 from the *AzureFrontDoor.Backend* service tag, and disallow inbound traffic on ports 80 and 443 from the Internet service tag. This ensures that other sources of public traffic cannot reach the Public IP of the Application Gateway directly.
 
-   > [!NOTE]
-   > Be aware that this tag does not limit traffic from just *YOUR* instance of Azure Front Door, that validation happens at the next stage.
+> [!NOTE]
+> Be aware that this tag does not limit traffic from just *YOUR* instance of Azure Front Door, that validation happens at the next stage.
 
 4. The Application Gateway is configured with multiple [multisite listeners](/azure/application-gateway/multiple-site-overview) all configured on the same port (443). Traffic is routed to the appropriate backend by the hostname specified within the multisite listener. Each listener represents a unique subdomain off the apex domain that is configured to point to the appropriate backend pool.
    - To ensure that traffic has originated from *YOUR* Front Door profile, you will configure a [custom WAF rule](/azure/web-application-firewall/ag/create-custom-waf-rules#example-7) to check the `X-Azure-FDID` header value. 
