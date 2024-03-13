@@ -1,32 +1,64 @@
 <!-- Use the aac-browse-header.yml   -->
+Workload teams often rely on Fully Qualified Domain Names (FQDNs) for client access, typically combined with TLS SNI. However, when a workload is accessible both from the public Internet and internally by enterprise users, routing to the application can follow distinct paths and receive varying security or Quality of Service (QoS) treatment. This architecture demonstrates an approach to differentiate traffic treatment based on DNS, considering whether the client originates from the Internet or the corporate network.
 
-This example architecture was designed to support multi-site, split-brain DNS application hosting for a customer. In this setup, applications are hosted on distinct virtual machines, each configured with a unique subdomain derived from a primary apex domain. A key aspect of this architecture was the requirement to secure management of network traffic. The requirements stated that all communication between the Application Gateway and the backend application servers (VMs) is routed through an Azure Firewall. For user access, Azure Front Door is employed for external users, while the Application Gateway is utilized for internal users. This architectural approach offers high availability, scalability, and enhanced security for web applications hosted on Azure.
+In this example architecture, applications are hosted on distinct virtual machines, each machine is configured to respond to a unique subdomain derived from a primary apex domain. A primary focus will be on secure management of network traffic. The goals are that all communication between the Application Gateway and the backend application servers (VMs) is routed through an Azure Firewall. For user access and caching/optimization needs, Azure Front Door is employed for external users, but is bypassed for internal users. The primary solution to support this architecture will be controlling DNS results based on the network location of the client.
+
+This architectural approach offers high availability, scalability, and enhanced security for web applications hosted on Azure.
 
 ## Architecture
 
-![Diagram of the Split-brain App Hosting architecture.](./media/SplitBrain-MultisiteHosting-FrontDoor-AppGW.png)
+![Diagram of the application hosting architecture.](./media/SplitBrain-MultisiteHosting-FrontDoor-AppGW.png)
 
 *Download a [Visio file](https://arch-center.azureedge.net/[file-name].vsdx) of this architecture.*
 
-### Workflow
+### Public Internet workflow
 
-The following workflow (or dataflow) corresponds to the above diagram:
-1. External users access the web application through Azure Front Door, which acts as a global load balancer and web application firewall. Azure Front Door routes the requests based on the client HOST HEADER to the Origin Group.
-2. The Origin Group is configured to point to the Application Gateway while leaving the HOST HEADER unaltered. This is required so the Application Gateway can properly route the incoming requests to the various backend pools.
-3. A [Network Security Group (NSG)](https://learn.microsoft.com/en-us/azure/application-gateway/configuration-infrastructure#network-security-groups) is configured on the Application Gateway subnet to only allow incoming requests from the AzureFrontDoor.Backend service tag. This ensures that public traffic cannot hit the Public IP (pip) of the Application Gateway directly.
-4. The Application Gateway is configured with multiple [multisite listeners](https://learn.microsoft.com/en-us/azure/application-gateway/multiple-site-overview) all configured on the same port. Traffic is routed to the appropriate backend by the hostname specified within the multisite listener. Each listener represents a unique subdomain off the apex domain that is configured to point to the appropriate backend pool.
+![Diagram of the pubic internet workflow.](./media/SplitBrain-MultisiteHosting-FrontDoor-AppGW-public.png)
+
+The following workflow corresponds to the above diagram:
+
+1. External users access the web application through Azure Front Door, which acts as a global load balancer and web application firewall.
+   - Within Azure Front Door you assign the FQDN names of app1.contoso.com, app2.contoso.com, and app3.contoso.com via individual routes on a configured endpoint. It also hosts the TLS SNI certificates for the applications.
+   - Azure Front Door routes the requests based on the client `Host` HTTP header to the configured Origin Group.
+2. The Origin Group is configured to point to the Application Gateway by the Application Gateway's public IP address.
+
+   > [!IMPORTANT]
+   > You must ensure that the Origin Group is configured to leave the `Host` HTTP header unaltered. This is required so the Application Gateway can properly route the incoming requests to the various backend pools.
+
+3. A [Network Security Group (NSG)](/azure/application-gateway/configuration-infrastructure#network-security-groups) is configured to allow inbound access on ports 80 and 443 from the *AzureFrontDoor.Backend* service tag, and disallow inbound traffic on ports 80 and 443 from the Internet service tag. This ensures that other sources of public traffic cannot reach the Public IP of the Application Gateway directly.
+
+   > [!NOTE]
+   > Be aware that this tag does not limit traffic from just *YOUR* instance of Azure Front Door, that validation happens at the next stage.
+
+4. The Application Gateway is configured with multiple [multisite listeners](/azure/application-gateway/multiple-site-overview) all configured on the same port (443). Traffic is routed to the appropriate backend by the hostname specified within the multisite listener. Each listener represents a unique subdomain off the apex domain that is configured to point to the appropriate backend pool.
+   - To ensure that traffic has originated from *YOUR* Front Door profile, you will configure a [custom WAF rule](/azure/web-application-firewall/ag/create-custom-waf-rules#example-7) to check the `X-Azure-FDID` header value. 
+   - Azure generates a unique identifier for each Front Door profile and you can find the identifier in the Azure portal by looking for the *Front Door ID* value in the Overview page of your profile.
 5. Route tables are implemented on the 'AppGwSubnet' and 'Apps' subnet to facilitate the requirement of having all traffic flow through the Azure Firewall.
 6. Azure Firewall is configured to allow traffic between the Application Gateway and the backend pools. Optionally additional features can be enabled to analyze and inspect the traffic.
-7. On premise users are pointed to a DNS server that contains the same subdomains as the Front Door but are configured to the private IP address of the Application Gateway.
+
+### Private (enterprise) workflow
+
+![Diagram of the private enterprise workflow.](./media/SplitBrain-MultisiteHosting-FrontDoor-AppGW-private.png)
+
+The following workflow corresponds to the above diagram:
+
+1. Application FQDNs are configured on the on-premises DNS provider. This DNS provider could be on-premises Active Directory (AD) DNS servers or various other 3rd party solutions.
+2. The DNS entries for each of the application FQDNs are configured to point to the private IP address of the Application Gateway.
+   - The connection that facilitates access to the Application Gateway can be either an ExpressRoute circuit or a site-to-site (S2S) VPN.
+3. A [Network Security Group (NSG)](/azure/application-gateway/configuration-infrastructure#network-security-groups) is configured on the Application Gateway subnet to only allow incoming private requests from on-premises user networks where traffic will be originating from. This ensures that other sources of private traffic cannot reach the private IP of the Application Gateway directly.
+4. The Application Gateway is configured with multiple [multisite listeners](/azure/application-gateway/multiple-site-overview) all configured on the same port (443). Traffic is routed to the appropriate backend by the hostname specified within the multisite listener. Each listener represents a unique subdomain off the apex domain that is configured to point to the appropriate backend pool.
+5. Route tables are implemented on the 'AppGwSubnet' and 'Apps' subnet to facilitate the requirement of having all traffic flow through the Azure Firewall.
+6. Azure Firewall is configured to allow traffic between the Application Gateway and the backend pools. Optionally additional features can be enabled to analyze and inspect the traffic.
 
 ### Components
 
-  - [Azure Front Door](https://azure.microsoft.com/services/frontdoor): Azure Front Door is a global load balancer and web application firewall that provides fast and secure delivery of web applications to users around the world. It is used in this architecture to route the external users to the closest Application Gateway instance and protect the web application from common web attacks.
-  - [Application Gateway](https://azure.microsoft.com/services/application-gateway): Application Gateway is a regional load balancer and web application firewall that provides high availability, scalability, and security for web applications. It is used in this architecture to route the requests from both external and internal users to the back-end web servers and protect the web application from common web attacks.
-  - [Azure Firewall](https://azure.microsoft.com/services/azure-firewall): Azure Firewall is a cloud-based network security service that filters and logs the traffic between different subnets and networks. It is used in this architecture to control and monitor the traffic between Application Gateway and the back-end web servers, and to perform NAT for the outbound traffic from the web servers to the internet.
-  - [Route Table](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-udr-overview#user-defined): Route tables let you create custom, or user-defined(static), routes in Azure to override Azure's default system routes, or to add more routes to a subnet's route table. In this architecture they are used to define User-defined Routes (UDR) to direct all traffic leaving the AppGWsubnet destined for the individual backend pools to first go through the Azure Firewall. A route table with a UDR is also required on the backend pool subnet to direct return traffic to the Application Gateway to first go through the Azure Firewall. These route tables are attached at the subnet level.
-  - [Azure Virtual Machines](https://azure.microsoft.com/services/virtual-machines): Azure Virtual Machines are on-demand, scalable, and configurable compute resources that run the web application code. They are used in this architecture to host the back-end web servers in an availability set, which provides high availability and fault tolerance.
-  - [Azure ExpressRoute](https://learn.microsoft.com/en-us/azure/expressroute/expressroute-introduction): ExpressRoute lets you extend your on-premises networks into the Microsoft cloud over a private connection with the help of a connectivity provider. In this architecture it is one of the options to facilitate private connectivity to the Application Gateway for on premise users.
+- [Azure Front Door](/azure/well-architected/service-guides/azure-front-door): Azure Front Door is a global load balancer and web application firewall that provides fast and secure delivery of web applications to users around the world. It is used in this architecture to route the external users to the Application Gateway instance and provide caching/optimization options to enhace user experience.
+- [Application Gateway](/azure/well-architected/service-guides/azure-application-gateway): Application Gateway is a regional load balancer and web application firewall that provides high availability, scalability, and security for web applications. It is used in this architecture to route the requests from both external and internal users to the back-end web servers and protect the web application from common web attacks. Since Azure Front Door and Application Gateway provide WAF capabilities, it was decided to use the WAF functionality on the Application Gateway since both workflows (public/private) utilize this resource. 
+- [Azure Firewall](/azure/well-architected/service-guides/azure-firewall): Azure Firewall is a cloud-based network security service that filters and logs the traffic between different subnets and networks. It is used in this architecture to control and monitor the traffic between Application Gateway and the back-end web servers, and to perform NAT for the outbound traffic from the web servers to the internet.
+- [Route Table](/azure/virtual-network/virtual-networks-udr-overview#user-defined): Route tables let you create custom, or user-defined(static), routes in Azure to override Azure's default system routes, or to add more routes to a subnet's route table. In this architecture they are used to define User-defined Routes (UDR) to direct all traffic leaving the AppGWsubnet destined for the individual backend pools to first go through the Azure Firewall. A route table with a UDR is also required on the backend pool subnet to direct return traffic to the Application Gateway to first go through the Azure Firewall. These route tables are attached at the subnet level.
+- [Azure Virtual Machines](/azure/well-architected/service-guides/azure-expressroute): Azure Virtual Machines are on-demand, scalable, and configurable compute resources that run the web application code. They are used in this architecture to host the back-end web servers in an availability set, which provides high availability and fault tolerance.
+- [Azure ExpressRoute](/azure/expressroute/expressroute-introduction): ExpressRoute lets you extend your on-premises networks into the Microsoft cloud over a private connection with the help of a connectivity provider. In this architecture it is one of the options to facilitate private connectivity to the Application Gateway for on premise users.
+- DNS (Domain Name System): Having public DNS configured with the proper CNAME of the Azure Front Door endpoint FQDN is a critical component for the public internet workflow. On the private (enterprise) side, configuring the local DNS provider (Active Directory DNS/3rd party) to point each application FQDN to the private IP of the Application Gateway is critical. This split-brain DNS situation allows the enterprise users to gain access to the applications without traversing the public internet.
   
 ### Alternatives
 
@@ -34,90 +66,66 @@ The primary alternative to this architecture is to remove Front Door and simply 
 
 ![Diagram of the alternate Split-brain App Hosting architecture.](./media/SplitBrain-MultisiteHosting-FrontDoor-AppGW-alt.png)
 
-Other possible alternatives for this architecture are:
-  - [Azure Traffic Manager](https://azure.microsoft.com/services/traffic-manager): Azure Traffic Manager is a DNS-based traffic routing service that distributes the traffic across different regions and endpoints. It could be used instead of Azure Front Door to route the external users to the closest Application Gateway instance. However, Azure Front Door provides additional features such as web application firewall, caching, and session affinity, which are not available in Azure Traffic Manager.
-  - [Azure Load Balancer](https://azure.microsoft.com/services/load-balancer): Azure Load Balancer is a network load balancer that provides high availability and scalability for TCP and UDP traffic. It could be used instead of Application Gateway to distribute the requests from both external and internal users to the back-end web servers. However, Application Gateway provides additional features such as web application firewall, SSL termination, and cookie-based session affinity, which are not available in Azure Load Balancer.
-  - [Azure App Service](https://azure.microsoft.com/services/app-service): Azure App Service is a fully managed platform for hosting web applications without managing the underlying infrastructure. It could be used instead of Azure Virtual Machines to host the back-end web servers. However, Azure Virtual Machines provide more flexibility and control over the web server configuration and deployment, which might be required for some web applications.
-  - [Container Apps](https://learn.microsoft.com/en-us/azure/container-apps/overview): Azure Container Apps is a fully managed platform for hosting containerized applications without managing the underlying infrastructure. It could be used instead of Azure Virtual Machines to host the back-end web servers.
-  - [Azure Kubernetes Service (AKS)](https://learn.microsoft.com/en-us/azure/aks/intro-kubernetes): Azure Kubernetes Service (AKS) is a managed Kubernetes service that allows you to run and orchestrate containerized applications at scale. It could be used instead of Azure Virtual Machines to host the back-end web servers. However, Azure Kubernetes Service (AKS) requires more management and operational overhead than Azure Virtual Machines, and might not be suitable for simple web applications.
+Other possible alternatives for the ingress traffic in this architecture are:
+
+- [Azure Traffic Manager](/azure/well-architected/service-guides/traffic-manager/reliability): Azure Traffic Manager is a DNS-based traffic routing service that distributes the traffic across different regions and endpoints. It could be used instead of Azure Front Door to route the external users to the closest Application Gateway instance. However, Azure Front Door provides additional features such as web application firewall, caching, and session affinity, which are not available in Azure Traffic Manager.
+- [Azure Load Balancer](/azure/well-architected/service-guides/azure-load-balancer/reliability): Azure Load Balancer is a network load balancer that provides high availability and scalability for TCP and UDP traffic. It could be used instead of Application Gateway to distribute the requests from both external and internal users to the back-end web servers. However, Application Gateway provides additional features such as web application firewall, SSL termination, and cookie-based session affinity, which are not available in Azure Load Balancer.
+
+> [!TIP]
+> Virtual machines in this architecture are a stand-in for any application platform that supports private IP based access. The applications could have been hosted in [Azure App Service](/azure/well-architected/service-guides/azure-app-service/reliability), [Azure Container Apps](/azure/container-apps/overview), or [Azure Kubernetes Service (AKS)](/azure/well-architected/service-guides/azure-kubernetes-service), for example, as they all support private IP based access.
 
 ## Scenario details
 
-This scenario was built to solve the problem of hosting a web application that needs to serve both external and internal users with high availability, scalability, and security. The customer’s goals are to:
+This scenario was built to solve the problem of hosting a web application that needs to serve both external and internal users with high availability, scalability, and security. The customer's goals are to:
 
- - Provide fast and reliable access to the web application for users around the world.
- - Use the same apex domain name and URL for both external and internal users, without exposing the internal IP addresses to the internet while routing subdomains to different applications hosted on separate virtual machines.
- - Protect the web application from common web attacks and malicious traffic.
- - Control and monitor all network traffic between the Application Gateway and the backend virtual machines.
- - Ensure the availability and fault tolerance of the web application.
+- Provide fast and reliable access to the web application for users around the world.
+- Use the same apex domain name and URL for both external and internal users, without exposing the internal IP addresses to the Internet while routing subdomains to different applications hosted on separate virtual machines.
+- Protect the web application from common web attacks and malicious traffic.
+- Control and monitor all network traffic between the Application Gateway and the backend virtual machines.
+- Ensure the availability and fault tolerance of the web application.
 
 ### Potential use cases
 
 This architecture can be useful for scenarios that require:
- - **Multi-site hosting**: The solution enables hosting multiple applications on separate virtual machines, each with a unique subdomain off a primary apex domain. This can help to isolate and manage different workloads, such as development, testing, and production environments.
- - **Split-brain DNS**: The solution uses Azure Front Door for external users and Application Gateway for internal users, with different DNS records for each. This can help to optimize network performance, security, and availability for different types of users. 
- - **Network security**: The solution ensures that network traffic between the Application Gateway and the backend application servers (VMs) flows through an Azure Firewall. This can help to protect the applications from malicious attacks and enforce network policies. 
-  - **Application scalability**: The solution uses Application Gateway to distribute traffic among the backend VMs. This can help to improve application performance and availability, as well as support horizontal scaling.
 
-Some industries that might benefit from this architecture are:
-  - **Retail**: Retailers can use this architecture to host multiple e-commerce sites for different regions, brands, or products, while ensuring network security and performance for their customers and employees.
-  - **Finance**: Financial institutions can use this architecture to host multiple applications for different services, such as banking, trading, or insurance, while ensuring network security and compliance for their customers and regulators.
-  - **Media**: Media companies can use this architecture to host multiple applications for different content types, such as news, video, or music, while ensuring network performance and availability for their users and partners.  
+- **Multi-site hosting**: The solution enables hosting multiple applications on separate virtual machines, each with a unique subdomain off a primary apex domain. This can help to isolate and manage different workloads, such as development, testing, and production environments.
+- **Split-brain DNS**: The solution uses Azure Front Door for external users and Application Gateway for internal users, with different DNS records for each. This can help to optimize network performance, security, and availability for different types of users. 
+- **Network security**: The solution ensures that network traffic between the Application Gateway and the backend application servers (VMs) flows through an Azure Firewall. This can help to protect the applications from malicious attacks and enforce network policies. 
+- **Application scalability**: The solution uses Application Gateway to distribute traffic among the backend VMs. This can help to improve application performance and availability, as well as support horizontal scaling.
 
 ## Considerations
 
-These considerations implement the pillars of the Azure Well-Architected Framework, which is a set of guiding tenets that can be used to improve the quality of a workload. For more information, see [Microsoft Azure Well-Architected Framework](/azure/architecture/framework).
-
-### Operational Excellence
-
-Operational excellence is about delivering and supporting reliable and efficient solutions that align with business objectives. For more information, see [Overview of the operational excellence pillar](/azure/architecture/framework/operational-excellence/overview).
-
-In this example workload, deploying the resources via Infrastructure as Code (IaC) is a key practice that enables operational excellence. IaC is the process of managing and provisioning cloud resources through code, rather than manual processes. IaC can help to:
-
-- Improve consistency and repeatability of deployments, reducing errors and failures.
-- Increase agility and speed of delivery, enabling faster feedback and iteration.
-- Enhance security and compliance, enforcing policies and standards across the environment.
-- Reduce costs and waste, optimizing the utilization and allocation of resources.
-
-To implement IaC for this architecture, you can use [Azure Bicep templates](https://learn.microsoft.com/en-us/azure/templates/microsoft.network/applicationgateways?pivots=deployment-language-bicep) (Application Gateway template linked) to define the desired state of your cloud resources. Bicep is a domain-specific language (DSL) for deploying Azure resources. It simplifies the creation of ARM templates by providing a more concise and readable syntax.
-
-You can also use Azure DevOps to manage the source control, testing, and deployment of your Bicep templates. Azure DevOps is a cloud-based platform that provides a set of tools and services for collaborative software development. You can use Azure DevOps to:
-
-- Store and version your Bicep templates in a Git repository, enabling collaboration and tracking of changes.
-- Create and run unit tests and validation tests for your Bicep templates, ensuring the quality and correctness of your code.
-- Define and execute continuous integration and continuous delivery (CI/CD) pipelines for your Bicep templates, automating the build and release process.
-- Monitor and troubleshoot the performance and health of your deployments, identifying and resolving issues quickly.
-
-When managing Infrastructure as Code (IaC) alongside the application life cycle, it’s crucial to recognize their differences. IaC resources require specific life cycle management, addressing versioning, testing, deployment, and updates. Additionally, IaC security and compliance must be considered separately from application code. To achieve operational excellence, organizations should use a common source control system, a unified CI/CD pipeline, and a shared monitoring and auditing system for both code and IaC resources. 
-
-By using IaC and Azure DevOps, you can achieve operational excellence for your web application hosting solution, ensuring reliability, efficiency, and alignment with your business goals.
+These considerations implement the pillars of the Azure Well-Architected Framework, which is a set of guiding tenets that can be used to improve the quality of a workload. For more information, see [Microsoft Azure Well-Architected Framework](/azure/well-architected/).
 
 ### Reliability
 
-Reliability ensures your application can meet the commitments you make to your customers. For more information, see [Overview of the reliability pillar](/azure/architecture/framework/resiliency/overview).
+Reliability ensures your application can meet the commitments you make to your customers. For more information, see [Design review checklist for Reliability](/azure/well-architected/reliability/checklist).
 
- - **Virtual machines**: You can use [Availability Sets](https://learn.microsoft.com/en-us/azure/virtual-machines/availability-set-overview) to distribute your virtual machines across multiple fault domains and update domains within a single datacenter. You can also use [Availability Zones](https://learn.microsoft.com/en-us/azure/reliability/availability-zones-overview) to distribute your virtual machines across multiple physically isolated datacenters within a region.
-  - **Application Gateway**: Azure Application Gateways are always deployed in a highly available fashion. The service is made up of multiple instances that are created as configured if autoscaling is disabled, or required by the application load if autoscaling is enabled. You can also use [Zone-redundant SKUs](https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-autoscaling-zone-redundant#autoscaling-and-high-availability) to deploy your Application Gateway instances across Availability Zones and achieve higher availability and resiliency.
-  - **Azure Front Door**: You can use [Azure Front Door Health Probes](https://learn.microsoft.com/en-us/azure/frontdoor/health-probes) to monitor the health and availability of your backend application servers and automatically fail over to healthy endpoints. You can also use [Azure Front Door Priority-based traffic-routing](https://learn.microsoft.com/en-us/azure/frontdoor/routing-methods#priority-based-traffic-routing) to distribute your traffic across multiple backend pools and optimize the performance and reliability of your web applications.  
+  - **Use availability zones**: TODO
+  - **Conduct failure mode analysis**: TODO (the misconfiguration of either gateway can potentially result in a loss of the ability to route any traffic to the backends.  SPOF)
+  - **Use health probes**: TODO
+  - **Plan for disaster recovery**: TODO - Cover the potential need to update DNS in both public and private zones
 
 ### Security
 
-Security provides assurances against deliberate attacks and the abuse of your valuable data and systems. For more information, see [Overview of the security pillar](/azure/architecture/framework/security/overview). 
+Security provides assurances against deliberate attacks and the abuse of your valuable data and systems. For more information, see [Design review checklist for Security](/azure/well-architected/security/checklist). 
 
-In this example workload, network segmentation is the most crucial aspect of security. It enhances the architecture's security posture by isolating systems and applications, thereby containing potential threats and preventing them from spreading. This approach also reduces the attack surface by limiting lateral movement across the network.
-
-Many regulatory standards require network segmentation, making it essential for compliance. Moreover, it simplifies monitoring and troubleshooting due to more predictable traffic patterns within a segment. Lastly, it allows for granular control over network traffic, enabling organizations to enforce policies on a per-segment basis. In this example workload we achieve this by placing our Application Gateway and Azure Firewall in the Hub vNET and our backend web servers in the spoke vNET, we can apply Network Security Groups (NSG) on each subnet explicitly allowing/denying traffic as per our application requirements.
+  - **Apply network segmentation**: TODO
+  - **Restrict ingress and egress traffic**: TODO (FW, NSG)
+  - **Protect against known vulnerabilities**: TODO (WAF)
+  - **Addressing access to shared resources**: This scenario has common resources used by multiple distinct workloads, how do we manage RBAC, etc.
+  - **Use TLS**: TODO  (Client -> AFD, AFD -> AppGW, AppGW -> backend compute)
+  - **Consider Private Link for AFD**: TODO
 
 ### Other Potential Security Enhacements
 
- - **Virtual machines**: You can use [Microsoft Defender for Cloud](https://learn.microsoft.com/en-us/azure/defender-for-cloud/defender-for-cloud-introduction) to monitor the security posture of your virtual machines and apply security recommendations. You can also use [Microsoft Defender for Servers](https://learn.microsoft.com/en-us/azure/defender-for-cloud/plan-defender-for-servers-select-plan) to enable advanced threat protection and vulnerability assessment for your virtual machines.
   - **Application Gateway**: You can use [Web Application Firewall (WAF)](https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/ag-overview) to protect your web applications from common web vulnerabilities and exploits. You can also use [Application Gateway Private Link](https://learn.microsoft.com/en-us/azure/application-gateway/private-link) to securely access your backend application servers from Application Gateway without exposing them to the public internet.
    - **Azure Firewall**: You can use [Azure Firewall Threat Intelligence](https://learn.microsoft.com/en-us/azure/firewall/threat-intel) to block malicious traffic from known malicious IP addresses and domains. You can also use [Azure Firewall DNS Proxy](https://learn.microsoft.com/en-us/azure/firewall/dns-details) to intercept and inspect DNS traffic and apply DNS filtering rules. 
    - **Azure Front Door**: You can use [Azure Web Application Firewall](https://learn.microsoft.com/en-us/azure/web-application-firewall/afds/afds-overview) to protect your web applications from common web vulnerabilities and exploits at the edge. You can also use [Azure Private Link](https://learn.microsoft.com/en-us/azure/frontdoor/private-link) in Front Door Premium to securely access your backend application servers from Azure Front Door without exposing them to the public internet.    
 
 ### Cost optimization
 
-Cost optimization is about looking at ways to reduce unnecessary expenses and improve operational efficiencies. For more information, see [Overview of the cost optimization pillar](/azure/architecture/framework/cost/overview).
+Cost optimization is about looking at ways to reduce unnecessary expenses and improve operational efficiencies. For more information, see [Design review checklist for Cost Optimization](/azure/well-architected/cost-optimization/checklist).
 
   - **Virtual Machines**: The cost of running virtual machines depends on the size, region, and operating system of the instances. You can use [Azure Reserved Virtual Machine Instances](https://learn.microsoft.com/en-us/azure/cost-management-billing/reservations/save-compute-costs-reservations) to save up to 72% compared to pay-as-you-go prices. You can also use [Azure Hybrid Benefit](https://learn.microsoft.com/en-us/windows-server/get-started/azure-hybrid-benefit) to reuse your existing Windows Server licenses and save up to 40%. 
   - **Application Gateway**: The cost of Application Gateway is based on the number of instances, the size of the instances, and the amount of data processed. You can use [autoscaling](https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-autoscaling-zone-redundant) to adjust the number of instances based on the traffic demand and optimize the cost. You can also use [zone-redundant SKUs](https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-autoscaling-zone-redundant#autoscaling-and-high-availability) to deploy across Availability Zones and reduce the need for additional instances for high availability. 
@@ -126,7 +134,17 @@ Cost optimization is about looking at ways to reduce unnecessary expenses and im
 
 See an example of this solution in the [Azure Pricing Calculator](https://azure.com/e/e0b74472f72d48ce891b08b3af105872) approximating typical usage with the components showcased in the architecture. Adjust to fit your scenario.
 
-*For more information on specific pricing and all the SKU sizes available, please visit the [Pricing Calculator](https://azure.microsoft.com/en-us/pricing/calculator).*
+### Operational Excellence
+
+Operational excellence is about delivering and supporting reliable and efficient solutions that align with business objectives. For more information, see [Design review checklist for Operational Excellence](/azure/well-architected/operational-excellence/checklist).
+
+Deploying the resources used in this workload should be done via pipelines and Infrastructure as Code (IaC). To implement IaC for this architecture, you can use [Azure Bicep templates](/azure/templates/microsoft.network/applicationgateways) to define the desired state of your cloud resources.
+
+You can also use Azure DevOps to manage the source control, testing, and deployment of your Bicep templates.
+
+When managing Infrastructure as Code (IaC) alongside the application life cycle, it’s crucial to recognize their differences. IaC resources require specific life cycle management, addressing versioning, testing, deployment, and updates. Additionally, IaC security and compliance must be considered separately from application code. To achieve operational excellence, organizations should use a common source control system, a unified CI/CD pipeline, and a shared monitoring and auditing system for both code and IaC resources. 
+
+
 
 ## Contributors
 
@@ -134,26 +152,25 @@ See an example of this solution in the [Azure Pricing Calculator](https://azure.
 
 Principal authors:
 
- - [Troy Hite](http://linkedin.com/in/digitalbydesign) | Senior Cloud Solution Architect
+- [Troy Hite](http://linkedin.com/in/digitalbydesign) | Senior Cloud Solution Architect
 
 Other contributors:
 
- - [Mays Algebary](https://www.linkedin.com/in/maysalgebary) | Senior Azure Networking Global Blackbelt
- - [Adam Torkar](https://www.linkedin.com/in/at-10993764) | Senior Azure Networking Global Blackbelt
- - [Michael McKechney](https://www.linkedin.com/in/michaelmckechney/) | Principal Azure Technology Specialist
+- [Mays Algebary](https://www.linkedin.com/in/maysalgebary) | Senior Azure Networking Global Blackbelt
+- [Adam Torkar](https://www.linkedin.com/in/at-10993764) | Senior Azure Networking Global Blackbelt
+- [Michael McKechney](https://www.linkedin.com/in/michaelmckechney/) | Principal Azure Technology Specialist
  
 *To see non-public LinkedIn profiles, sign in to LinkedIn.*
 
 ## Next steps
 
-* [Tutorial: Create and configure an application gateway to host multiple web sites using the Azure Portal](https://learn.microsoft.com/en-us/azure/application-gateway/create-multiple-sites-portal)
-* [Use Azure Front Door in a multitenant solution](https://learn.microsoft.com/en-us/azure/architecture/guide/multitenant/service/front-door)
-* [Application Gateway infrastructure configuration](https://learn.microsoft.com/en-us/azure/application-gateway/configuration-infrastructure)
-* [End-to-end TLS with Azure Front Door](https://learn.microsoft.com/en-us/azure/frontdoor/end-to-end-tls)
-* [Add a custom domain to Azure Front Door](https://learn.microsoft.com/en-us/azure/frontdoor/front-door-custom-domain)
-* [What is geo-filtering on a domain for Azure Front Door](https://learn.microsoft.com/en-us/azure/web-application-firewall/afds/waf-front-door-geo-filtering)
+- [Tutorial: Create and configure an application gateway to host multiple web sites using the Azure Portal](/azure/application-gateway/create-multiple-sites-portal)
+- [Use Azure Front Door in a multitenant solution](/azure/architecture/guide/multitenant/service/front-door)
+- [Application Gateway infrastructure configuration](/azure/application-gateway/configuration-infrastructure)
+- [End-to-end TLS with Azure Front Door](/azure/frontdoor/end-to-end-tls)
+- [Add a custom domain to Azure Front Door](/azure/frontdoor/front-door-custom-domain)
+- [What is geo-filtering on a domain for Azure Front Door](/azure/web-application-firewall/afds/waf-front-door-geo-filtering)
  
 ## Related resources
 
-Examples:
-  - [Firewall and Application Gateway for virtual networks](/azure/architecture/example-scenario/gateway/firewall-application-gateway#architecture-2)
+- [Firewall and Application Gateway for virtual networks](/azure/architecture/example-scenario/gateway/firewall-application-gateway#architecture-2)
