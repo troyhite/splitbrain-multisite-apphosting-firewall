@@ -101,38 +101,37 @@ These considerations implement the pillars of the Azure Well-Architected Framewo
 
 Reliability ensures your application can meet the commitments you make to your customers. For more information, see [Design review checklist for Reliability](/azure/well-architected/reliability/checklist).
 
-1. Identify Failure Points
+**Identify Failure Points**
 
 In our architecture, several critical components require careful consideration:
 
-   - Application Gateway: The entry point for all external user requests. Potential failure points include misconfigurations, SSL certificate expiration, or capacity limits.
-   - Azure Firewall: Responsible for securing communication between the Application Gateway and backend VMs. Failures could occur due to rule conflicts, unexpected traffic spikes, or misconfigured network rules.
-   - Azure Front Door: Primarily used for external user access and caching/optimization. Failure points may involve DNS misconfigurations, regional outages, or SSL termination issues.
+   - **Application Gateway**: The entry point for all internal user requests. Potential failure points include misconfigurations, SSL certificate expiration, or capacity limits.
+   - **Azure Firewall**: Responsible for securing communication between the Application Gateway and backend VMs. Failures could occur due to rule conflicts, unexpected traffic spikes, or misconfigured network rules.
+   - **Azure Front Door**: Primarily used for external user access and caching/optimization. Failure points may involve DNS misconfigurations, regional outages, or SSL termination issues.
 
-2. Assess Impact
+**Assess Impact**
+   - **External Users**: If the Application Gateway fails, external users won’t be able to access the subdomains associated with our primary apex domain. This directly impacts user experience and business continuity.
+   - **Internal Users**: Backend VMs are critical for internal users (e.g., financial analysts). A failure in communication between the Application Gateway and VMs disrupts data retrieval and analysis.
 
-   - External Users: If the Application Gateway fails, external users won’t be able to access the subdomains associated with our primary apex domain. This directly impacts user experience and business continuity.
-   - Internal Users: Backend VMs are critical for internal users (e.g., financial analysts). A failure in communication between the Application Gateway and VMs disrupts data retrieval and analysis.
-
-3. Mitigation Strategies
-   - Redundancy and Scaling:
+**Mitigation Strategies**
+   - **Redundancy and Scaling**:
       - Deploy multiple Application Gateways across availability zones to ensure high availability.
       - Autoscale backend VMs based on demand to handle varying loads.
-   - Health Probes and Monitoring:
+   - **Health Probes and Monitoring**:
       - Regularly check the health of VMs and services. Use Azure Monitor to trigger scaling events or failover.
       - Set up alerts for critical metrics (e.g., CPU, memory, response time).
-   - DNS Control:
+   - **DNS Control**:
       - Implement DNS-based routing based on client network location:
          - For external users, Azure Front Door handles DNS resolution and caching.
          - For internal users, bypass Azure Front Door and route directly to the Application Gateway.
       - Ensure DNS records are up-to-date and correctly configured. 
          - In the event of a diaster, plan for the need to keep both public and private DNS records accurate post any required failover.
 
-4. Continuous Monitoring and Incident Response
-   - Logging and Analysis:
+**Continuous Monitoring and Incident Response**
+   - **Logging and Analysis**:
       - Collect logs from all components (Application Gateway, Azure Firewall, VMs).
       - Use Azure Log Analytics or Azure Monitor Logs for centralized analysis.
-   - Incident Response Plan:
+   - **Incident Response Plan**:
       - Define procedures for handling failures.
       - Establish communication channels to inform users promptly during outages.
 
@@ -142,11 +141,47 @@ By following these strategies, we can maintain a reliable and secure network tra
 
 Security provides assurances against deliberate attacks and the abuse of your valuable data and systems. For more information, see [Design review checklist for Security](/azure/well-architected/security/checklist). 
 
-  - **Apply network segmentation**: TODO
-  - **Restrict ingress and egress traffic**: TODO (FW, NSG)
-  - **Protect against known vulnerabilities**: TODO (WAF)
-  - **Addressing access to shared resources**: This scenario has common resources used by multiple distinct workloads, how do we manage RBAC, etc.
-  - **Use TLS**: TODO  (Client -> AFD, AFD -> AppGW, AppGW -> backend compute)
+**Network Security**
+
+**Define Network Boundaries**
+
+In our architecture, we have distinct network boundaries for external and internal users:
+   - **External Users**: Azure Front Door serves as the entry point for external traffic. It provides SSL termination, caching, and DDoS protection. Ensure proper network segmentation between external and internal components.
+   - **Internal Users**: Direct communication between the Application Gateway and backend VMs. Restrict network access to authorized IP ranges for internal users.
+
+**Data Security**
+
+**Encrypt Data in Transit and at Rest**
+   - **Data in Transit**:
+      - Implement [end-to-end TLS on Azure Front Door](/azure/frontdoor/end-to-end-tls) to ensure traffic traverses the Application Gateway and on to your backend VMs in a secure manner.
+      - Configure Azure Front Door to enforce HTTPS for external users.
+> [!NOTE]
+> Self-signed certificates are not supported on Azure Front Door.
+      - Implement mutual TLS (mTLS) for internal communication.
+   - **Data at Rest**:
+      - Encrypt sensitive data stored in backend VMs using Azure Disk Encryption or Azure SQL Transparent Data Encryption (TDE).
+
+**Identity and Access Management (IAM)**
+
+**Implement Least Privilege Access**
+   - **Role-Based Access Control (RBAC)**:
+      - Assign minimal permissions to service accounts and users.
+      - Use custom roles to limit access to specific resources.
+   - **Managed Identities**:
+      - Leverage managed identities for VMs to avoid storing credentials.
+      - Limit access to Azure services using managed identities.
+
+**Threat Detection and Monitoring**
+
+**Set Up Logging and Monitoring**
+   - **Azure Monitor**:
+      - Enable diagnostic settings for all components (Application Gateway, Azure Firewall, VMs).
+      - Collect logs and metrics for analysis.
+   - **Security Center**:
+      - Enable threat detection and vulnerability assessments.
+      - Monitor security recommendations and apply necessary fixes.
+
+By addressing these security considerations, we can enhance the security of our subdomain-based web application.
 
 ### Other Potential Security Enhacements
 
