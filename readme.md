@@ -141,29 +141,23 @@ By following these strategies, we can maintain a reliable and secure network tra
 
 Security provides assurances against deliberate attacks and the abuse of your valuable data and systems. For more information, see [Design review checklist for Security](/azure/well-architected/security/checklist). 
 
-**Network Security**
-
-**Define Network Boundaries**
+**Network Security**: Define Network Boundaries
 
 In our architecture, we have distinct network boundaries for external and internal users:
    - **External Users**: Azure Front Door serves as the entry point for external traffic. It provides SSL termination, caching, and DDoS protection. Ensure proper network segmentation between external and internal components.
    - **Internal Users**: Direct communication between the Application Gateway and backend VMs. Restrict network access to authorized IP ranges for internal users.
 
-**Data Security**
-
-**Encrypt Data in Transit and at Rest**
+**Data Security**: Encrypt Data in Transit and at Rest
    - **Data in Transit**:
       - Implement [end-to-end TLS on Azure Front Door](/azure/frontdoor/end-to-end-tls) to ensure traffic traverses the Application Gateway and on to your backend VMs in a secure manner.
       - Configure Azure Front Door to enforce HTTPS for external users.
 > [!NOTE]
 > Self-signed certificates are not supported on Azure Front Door.
-      - Implement mutual TLS (mTLS) for internal communication.
+      
    - **Data at Rest**:
       - Encrypt sensitive data stored in backend VMs using Azure Disk Encryption or Azure SQL Transparent Data Encryption (TDE).
 
-**Identity and Access Management (IAM)**
-
-**Implement Least Privilege Access**
+**Identity and Access Management (IAM)**: Implement Least Privilege Access
    - **Role-Based Access Control (RBAC)**:
       - Assign minimal permissions to service accounts and users.
       - Use custom roles to limit access to specific resources.
@@ -171,9 +165,7 @@ In our architecture, we have distinct network boundaries for external and intern
       - Leverage managed identities for VMs to avoid storing credentials.
       - Limit access to Azure services using managed identities.
 
-**Threat Detection and Monitoring**
-
-**Set Up Logging and Monitoring**
+**Threat Detection and Monitoring**: Set Up Logging and Monitoring
    - **Azure Monitor**:
       - Enable diagnostic settings for all components (Application Gateway, Azure Firewall, VMs).
       - Collect logs and metrics for analysis.
