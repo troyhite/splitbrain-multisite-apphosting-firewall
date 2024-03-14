@@ -185,7 +185,7 @@ By addressing these security considerations, we can enhance the security of our 
 
 Cost optimization is about looking at ways to reduce unnecessary expenses and improve operational efficiencies. For more information, see [Design review checklist for Cost Optimization](/azure/well-architected/cost-optimization/checklist).
 
-  - **Backend compute**: The cost of running any backend compute service is driven by multiple factors. SKU selection, replica count, and region all play a part in chosing the right compute option. Ensure you take into account all elements of a compute resource before selecting the option that works best for your environment. 
+  - **Backend compute**: The cost of running any backend compute service is driven by multiple factors. SKU selection, replica count, and region all play a part in chosing the right compute option. Ensure you take into account all elements of a compute resource before selecting the option that works best for your workload. 
   - **Application Gateway**: The cost of Application Gateway is based on the number of instances, the size of the instances, and the amount of data processed. You can use [autoscaling](/azure/application-gateway/application-gateway-autoscaling-zone-redundant) to adjust the number of instances based on the traffic demand and optimize the cost. You can also use [zone-redundant SKUs](/azure/application-gateway/application-gateway-autoscaling-zone-redundant#autoscaling-and-high-availability) to deploy across Availability Zones and reduce the need for additional instances for high availability. 
   - **Azure Firewall**: The cost of Azure Firewall is based on a fixed hourly rate and the amount of data processed. When optimizing costs for an Azure Firewall resource, consider resource consolidation by sharing a single firewall instance across multiple applications or teams. By doing so, you can benefit from amortized costs through chargeback or showback. This approach ensures efficient utilization of the firewall while distributing expenses transparently among the relevant stakeholders. 
   - **Azure Front Door**: The cost of Azure Front Door is based on the number of routing rules, the number of HTTP(S) requests, and the amount of data transferred. You can use [Azure Front Door Standard/Premium](/azure/frontdoor/understanding-pricing) to get a unified experience with Azure CDN, Azure Web Application Firewall, and Azure Private Link. You can also use [Azure Front Door Rules Engine](/azure/frontdoor/front-door-rules-engine?pivots=front-door-standard-premium) to customize how your traffic is handled and optimize the performance and cost. If global access is not a requirement, or the additional features of Front Door are not needed, the same architecture can work with only the Application Gateway. All public DNS records can be pointed to the Public IP address configured on the Application Gateway listener(s).
@@ -200,6 +200,20 @@ Operational excellence is about delivering and supporting reliable and efficient
 Deploying the resources used in this workload should be done via pipelines and Infrastructure as Code (IaC). To implement IaC for this architecture, you can use [Azure Bicep templates](/azure/templates/microsoft.network/applicationgateways) to define the desired state of your cloud resources.
 
 You can also use Azure DevOps to manage the source control, testing, and deployment of your Bicep templates.
+
+#### Handling Operational Changes via IaC:
+In this specific workload we can consider the following steps:
+   - **Azure Firewall Integration**:
+      - Use Bicep templates to define and deploy your VMs, Application Gateway, and Azure Firewall.
+      - Ensure that all communication between the Application Gateway and backend application servers (VMs) is routed through the Azure Firewall.
+      - Define network security rules within the Azure Firewall configuration to enforce the required communication path.
+   - **Azure Front Door Configuration**:
+      - Again, use IaC to define and deploy your Azure Front Door.
+      - Configure Front Door to handle external user access and caching/optimization needs.
+      - Implement routing rules to bypass Front Door for internal users (based on client network location).
+   - **Shared Resources**:
+      - Plan your Azure DevOps IaC pipelines carefully between initial greenfield deployments and operational changes such as adding new applications.
+         - Breakout pipelines in a manner that makes adding new applications and deploying new resources easier for operations teams.
 
 When managing Infrastructure as Code (IaC) alongside the application life cycle, it’s crucial to recognize their differences. IaC resources require specific life cycle management, addressing versioning, testing, deployment, and updates. Additionally, IaC security and compliance must be considered separately from application code. To achieve operational excellence, organizations should use a common source control system, a unified CI/CD pipeline, and a shared monitoring and auditing system for both code and IaC resources. 
 
