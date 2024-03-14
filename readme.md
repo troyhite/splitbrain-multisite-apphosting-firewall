@@ -101,10 +101,42 @@ These considerations implement the pillars of the Azure Well-Architected Framewo
 
 Reliability ensures your application can meet the commitments you make to your customers. For more information, see [Design review checklist for Reliability](/azure/well-architected/reliability/checklist).
 
-  - **Use availability zones**: TODO
-  - **Conduct failure mode analysis**: TODO (the misconfiguration of either gateway can potentially result in a loss of the ability to route any traffic to the backends.  SPOF)
-  - **Use health probes**: TODO
-  - **Plan for disaster recovery**: TODO - Cover the potential need to update DNS in both public and private zones
+1. Identify Failure Points
+
+In our architecture, several critical components require careful consideration:
+
+   - Application Gateway: The entry point for all external user requests. Potential failure points include misconfigurations, SSL certificate expiration, or capacity limits.
+   - Azure Firewall: Responsible for securing communication between the Application Gateway and backend VMs. Failures could occur due to rule conflicts, unexpected traffic spikes, or misconfigured network rules.
+   - Azure Front Door: Primarily used for external user access and caching/optimization. Failure points may involve DNS misconfigurations, regional outages, or SSL termination issues.
+
+2. Assess Impact
+
+   - External Users: If the Application Gateway fails, external users won’t be able to access the subdomains associated with our primary apex domain. This directly impacts user experience and business continuity.
+   - Internal Users: Backend VMs are critical for internal users (e.g., financial analysts). A failure in communication between the Application Gateway and VMs disrupts data retrieval and analysis.
+
+3. Mitigation Strategies
+   - Redundancy and Scaling:
+      - Deploy multiple Application Gateways across availability zones to ensure high availability.
+      - Autoscale backend VMs based on demand to handle varying loads.
+   - Health Probes and Monitoring:
+      - Regularly check the health of VMs and services. Use Azure Monitor to trigger scaling events or failover.
+      - Set up alerts for critical metrics (e.g., CPU, memory, response time).
+   - DNS Control:
+      - Implement DNS-based routing based on client network location:
+         - For external users, Azure Front Door handles DNS resolution and caching.
+         - For internal users, bypass Azure Front Door and route directly to the Application Gateway.
+      - Ensure DNS records are up-to-date and correctly configured. 
+         - In the event of a diaster, plan for the need to keep both public and private DNS records accurate post any required failover.
+
+4. Continuous Monitoring and Incident Response
+   - Logging and Analysis:
+      - Collect logs from all components (Application Gateway, Azure Firewall, VMs).
+      - Use Azure Log Analytics or Azure Monitor Logs for centralized analysis.
+   - Incident Response Plan:
+      - Define procedures for handling failures.
+      - Establish communication channels to inform users promptly during outages.
+
+By following these strategies, we can maintain a reliable and secure network traffic management system for our web applications, meeting the goals of our example workload.
 
 ### Security
 
@@ -115,22 +147,21 @@ Security provides assurances against deliberate attacks and the abuse of your va
   - **Protect against known vulnerabilities**: TODO (WAF)
   - **Addressing access to shared resources**: This scenario has common resources used by multiple distinct workloads, how do we manage RBAC, etc.
   - **Use TLS**: TODO  (Client -> AFD, AFD -> AppGW, AppGW -> backend compute)
-  - **Consider Private Link for AFD**: TODO
 
 ### Other Potential Security Enhacements
 
-  - **Application Gateway**: You can use [Web Application Firewall (WAF)](https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/ag-overview) to protect your web applications from common web vulnerabilities and exploits. You can also use [Application Gateway Private Link](https://learn.microsoft.com/en-us/azure/application-gateway/private-link) to securely access your backend application servers from Application Gateway without exposing them to the public internet.
-   - **Azure Firewall**: You can use [Azure Firewall Threat Intelligence](https://learn.microsoft.com/en-us/azure/firewall/threat-intel) to block malicious traffic from known malicious IP addresses and domains. You can also use [Azure Firewall DNS Proxy](https://learn.microsoft.com/en-us/azure/firewall/dns-details) to intercept and inspect DNS traffic and apply DNS filtering rules. 
-   - **Azure Front Door**: You can use [Azure Web Application Firewall](https://learn.microsoft.com/en-us/azure/web-application-firewall/afds/afds-overview) to protect your web applications from common web vulnerabilities and exploits at the edge. You can also use [Azure Private Link](https://learn.microsoft.com/en-us/azure/frontdoor/private-link) in Front Door Premium to securely access your backend application servers from Azure Front Door without exposing them to the public internet.    
+  - **Application Gateway**: You can use [Web Application Firewall (WAF)](/azure/web-application-firewall/ag/ag-overview) to protect your web applications from common web vulnerabilities and exploits. You can also use [Application Gateway Private Link](/azure/application-gateway/private-link) to securely access your backend application servers from Application Gateway without exposing them to the public internet.
+   - **Azure Firewall**: You can use [Azure Firewall Threat Intelligence](/azure/firewall/threat-intel) to block malicious traffic from known malicious IP addresses and domains. You can also use [Azure Firewall DNS Proxy](/azure/firewall/dns-details) to intercept and inspect DNS traffic and apply DNS filtering rules. 
+   - **Azure Front Door**: You can use [Azure Web Application Firewall](/azure/web-application-firewall/afds/afds-overview) to protect your web applications from common web vulnerabilities and exploits at the edge. You can also use [Azure Private Link](/azure/frontdoor/private-link) in Front Door Premium to securely access your backend application servers from Azure Front Door without exposing them to the public internet.    
 
 ### Cost optimization
 
 Cost optimization is about looking at ways to reduce unnecessary expenses and improve operational efficiencies. For more information, see [Design review checklist for Cost Optimization](/azure/well-architected/cost-optimization/checklist).
 
-  - **Virtual Machines**: The cost of running virtual machines depends on the size, region, and operating system of the instances. You can use [Azure Reserved Virtual Machine Instances](https://learn.microsoft.com/en-us/azure/cost-management-billing/reservations/save-compute-costs-reservations) to save up to 72% compared to pay-as-you-go prices. You can also use [Azure Hybrid Benefit](https://learn.microsoft.com/en-us/windows-server/get-started/azure-hybrid-benefit) to reuse your existing Windows Server licenses and save up to 40%. 
-  - **Application Gateway**: The cost of Application Gateway is based on the number of instances, the size of the instances, and the amount of data processed. You can use [autoscaling](https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-autoscaling-zone-redundant) to adjust the number of instances based on the traffic demand and optimize the cost. You can also use [zone-redundant SKUs](https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-autoscaling-zone-redundant#autoscaling-and-high-availability) to deploy across Availability Zones and reduce the need for additional instances for high availability. 
-  - **Azure Firewall**: The cost of Azure Firewall is based on a fixed hourly rate and the amount of data processed. You can use [Azure Firewall Manager](https://learn.microsoft.com/en-us/azure/firewall-manager/overview) to centrally manage multiple firewalls and apply consistent policies across different subscriptions and virtual networks. You can also use [Azure Firewall Premium](https://learn.microsoft.com/en-us/azure/firewall/premium-features) to get additional features such as TLS inspection, IDPS, and URL filtering.
-  - **Azure Front Door**: The cost of Azure Front Door is based on the number of routing rules, the number of HTTP(S) requests, and the amount of data transferred. You can use [Azure Front Door Standard/Premium](https://learn.microsoft.com/en-us/azure/frontdoor/understanding-pricing) to get a unified experience with Azure CDN, Azure Web Application Firewall, and Azure Private Link. You can also use [Azure Front Door Rules Engine](https://learn.microsoft.com/en-us/azure/frontdoor/front-door-rules-engine?pivots=front-door-standard-premium) to customize how your traffic is handled and optimize the performance and cost. If global access is not a requirement, or the additional features of Front Door are not needed, the same architecture can work with only the Application Gateway. All public DNS records can be pointed to the Public IP address configured on the Application Gateway listener(s).
+  - **Virtual Machines**: The cost of running virtual machines depends on the size, region, and operating system of the instances. You can use [Azure Reserved Virtual Machine Instances](/azure/cost-management-billing/reservations/save-compute-costs-reservations) to save up to 72% compared to pay-as-you-go prices. You can also use [Azure Hybrid Benefit](/windows-server/get-started/azure-hybrid-benefit) to reuse your existing Windows Server licenses and save up to 40%. 
+  - **Application Gateway**: The cost of Application Gateway is based on the number of instances, the size of the instances, and the amount of data processed. You can use [autoscaling](/azure/application-gateway/application-gateway-autoscaling-zone-redundant) to adjust the number of instances based on the traffic demand and optimize the cost. You can also use [zone-redundant SKUs](/azure/application-gateway/application-gateway-autoscaling-zone-redundant#autoscaling-and-high-availability) to deploy across Availability Zones and reduce the need for additional instances for high availability. 
+  - **Azure Firewall**: The cost of Azure Firewall is based on a fixed hourly rate and the amount of data processed. You can use [Azure Firewall Manager](/azure/firewall-manager/overview) to centrally manage multiple firewalls and apply consistent policies across different subscriptions and virtual networks. You can also use [Azure Firewall Premium](/azure/firewall/premium-features) to get additional features such as TLS inspection, IDPS, and URL filtering.
+  - **Azure Front Door**: The cost of Azure Front Door is based on the number of routing rules, the number of HTTP(S) requests, and the amount of data transferred. You can use [Azure Front Door Standard/Premium](/azure/frontdoor/understanding-pricing) to get a unified experience with Azure CDN, Azure Web Application Firewall, and Azure Private Link. You can also use [Azure Front Door Rules Engine](/azure/frontdoor/front-door-rules-engine?pivots=front-door-standard-premium) to customize how your traffic is handled and optimize the performance and cost. If global access is not a requirement, or the additional features of Front Door are not needed, the same architecture can work with only the Application Gateway. All public DNS records can be pointed to the Public IP address configured on the Application Gateway listener(s).
 
 See an example of this solution in the [Azure Pricing Calculator](https://azure.com/e/e0b74472f72d48ce891b08b3af105872) approximating typical usage with the components showcased in the architecture. Adjust to fit your scenario.
 
