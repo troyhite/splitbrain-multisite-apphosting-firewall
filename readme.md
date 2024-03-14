@@ -197,18 +197,18 @@ See an example of this solution in the [Azure Pricing Calculator](https://azure.
 
 Operational excellence is about delivering and supporting reliable and efficient solutions that align with business objectives. For more information, see [Design review checklist for Operational Excellence](/azure/well-architected/operational-excellence/checklist).
 
-Deploying the resources used in this workload should be done via pipelines and Infrastructure as Code (IaC). To implement IaC for this architecture, you can use [Azure Bicep templates](/azure/templates/microsoft.network/applicationgateways) to define the desired state of your cloud resources.
+Deploying the resources used in this workload should be done via pipelines and Infrastructure as Code (IaC). To implement IaC for this architecture, you can use [Azure Bicep templates](/azure/templates/#bicep) to define the desired state of your cloud resources.
 
 You can also use Azure DevOps to manage the source control, testing, and deployment of your Bicep templates.
 
 #### Handling Operational Changes via IaC:
 In this specific workload we can consider the following steps:
    - **Azure Firewall Integration**:
-      - Use Bicep templates to define and deploy your VMs, Application Gateway, and Azure Firewall.
+      - Use Bicep templates to define and deploy your [VMs](/azure/templates/microsoft.compute/virtualmachines?pivots=deployment-language-bicep), [Application Gateway](/azure/templates/microsoft.network/applicationgateways), and [Azure Firewall](/azure/templates/microsoft.network/azurefirewalls?pivots=deployment-language-bicep).
       - Ensure that all communication between the Application Gateway and backend application servers (VMs) is routed through the Azure Firewall.
       - Define network security rules within the Azure Firewall configuration to enforce the required communication path.
    - **Azure Front Door Configuration**:
-      - Again, use IaC to define and deploy your Azure Front Door.
+      - Again, use IaC to define and deploy your [Azure Front Door](/azure/templates/microsoft.network/frontdoors?pivots=deployment-language-bicep).
       - Configure Front Door to handle external user access and caching/optimization needs.
       - Implement routing rules to bypass Front Door for internal users (based on client network location).
    - **Shared Resources**:
